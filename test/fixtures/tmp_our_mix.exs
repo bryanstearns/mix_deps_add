@@ -1,8 +1,8 @@
-defmodule MixDepAdd.Mixfile do
+defmodule MixDepsAdd.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :mix_dep_add,
+    [app: :mix_deps_add,
      version: "HARDCODED",
      elixir: "HARDCODED",
      build_embedded: Mix.env == :prod,
