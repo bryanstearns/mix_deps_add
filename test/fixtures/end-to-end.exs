@@ -1,10 +1,10 @@
-defmodule MixDepsAdd.Mixfile do
+defmodule EndToEnd.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :mix_deps_add,
-     version: "HARDCODED",
-     elixir: "HARDCODED",
+    [app: :end_to_end,
+     version: "0.1.0",
+     elixir: "~> 1.4",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      deps: deps()]
@@ -30,7 +30,6 @@ defmodule MixDepsAdd.Mixfile do
   defp deps do
     [
       {:httpoison, "~> 0.11.1"},
-      {:idna, "~> 4.0.0"},
       {:poison, "~> 3.1.0"}
     ]
   end

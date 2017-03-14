@@ -10,7 +10,6 @@ defmodule MixExsEditor do
     |> ensure_unique_name(name)
     |> insert(name, version)
     |> write
-    :ok
   end
 
   def read(filename \\ "mix.exs") do
@@ -70,10 +69,10 @@ defmodule MixExsEditor do
   defp exactly_one(_, _, too_many_error), do: {:error, too_many_error}
 
   defp deps_end_index(lines, start_index) do
-    with lines <- Enum.slice(lines, start_index..-1),
+    (with lines <- Enum.slice(lines, start_index..-1),
          end_index when not is_nil(end_index) <-
            Enum.find_index(lines, &(Regex.match?(@deps_end_regex, &1))),
-      do: start_index + end_index
+      do: start_index + end_index)
     || {:error, :no_deps_end}
   end
 

@@ -46,20 +46,18 @@ defmodule MixExsEditorTest do
 
   describe "end-to-end" do
     setup do
-      fixture = "test/fixtures/tmp_our_mix.exs"
-      unversioned_content = File.read!("mix.exs")
-      |> String.replace(~r/version: \"[^\"]+\",/, "version: \"HARDCODED\",")
-      |> String.replace(~r/elixir: \"[^\"]+\",/, "elixir: \"HARDCODED\",")
-      #on_exit(fn -> File.rm(fixture) end)
-      File.write!(fixture, unversioned_content)
+      original = File.read!("test/fixtures/end-to-end.exs")
+      copy = "test/fixtures/end-to-end-copy.exs"
+      on_exit(fn -> File.rm(copy) end)
+      File.write!(copy, original)
 
-      {:ok, fixture: fixture}
+      {:ok, fixture_path: copy}
     end
 
     test "works", context do
-      assert :ok = MixExsEditor.add("idna", "4.0.0", context[:fixture])
-      assert File.read!(context[:fixture]) ==
-             File.read!("test/fixtures/good_our_mix.exs")
+      assert :ok = MixExsEditor.add("idna", "4.0.0", context[:fixture_path])
+      assert File.read!(context[:fixture_path]) ==
+             File.read!("test/fixtures/end-to-end-result.exs")
     end
   end
 end
