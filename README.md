@@ -12,7 +12,7 @@ httpoison 0.11.1 added.
 Install its archive, so that it's available in all of your projects:
 
 ```
-$ mix archive.install https://github.com/bryanstearns/archives/raw/master/mix_deps_add.ez
+$ mix archive.install https://github.com/bryanstearns/mix_deps_add/releases/download/0.1.1/mix_deps_add-0.1.1.ez
 ```
 
 ## Why?

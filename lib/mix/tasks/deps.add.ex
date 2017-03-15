@@ -34,7 +34,7 @@ defmodule Mix.Tasks.Deps.Add do
   defp handle_result({:error, error}) do
     text = Map.get(@mix_exs_parsing_errors, error, nil)
     if text do
-      IO.puts("Oops: mix.exs doesn't look right: #{text}\nSee https://github.com/bryanstearns/mix_deps_add/master/README.md#restrictions for details")
+      IO.puts("Oops: mix.exs doesn't look right: #{text}\nSee https://github.com/bryanstearns/mix_deps_add#the-rules-for-your-deps0-function for details")
     else
       IO.puts("Something went wrong; this might help: \"#{inspect error}\"")
     end
