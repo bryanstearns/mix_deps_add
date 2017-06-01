@@ -4,13 +4,7 @@ defmodule MixExsEditor do
   @dep_regex ~r/\A\s+\[?\{(.*)\}[\],]?\z/
   @square_brackets_regex ~r/\A\s+[\[\]]{1,2}\z/
 
-  def add(name, version, filename \\ "mix.exs") do
-    filename
-    |> read
-    |> ensure_unique_name(name)
-    |> insert(name, version)
-    |> write
-  end
+  defstruct results: [], before: "", deps: [], after: "", filename: "mix.exs"
 
   def read(filename \\ "mix.exs") do
     File.read!(filename)
@@ -18,30 +12,39 @@ defmodule MixExsEditor do
     |> parse(filename)
   end
 
-  def insert({:error, _} = result, _name, _version), do: result
-  def insert({before_stuff, deps, after_stuff, filename}, name, version) do
-    deps = [":#{name}, \"~> #{version}\"" | deps]
-    |> Enum.sort
-    |> Enum.map(&("{#{&1}}"))
-    |> Enum.join(",\n      ")
-
-    content = [before_stuff, "    [\n      #{deps}\n    ]", after_stuff]
-    |> Enum.join("\n")
-    {content, filename}
-  end
-
-  def ensure_unique_name({:error, _} = result, _name), do: result
-  def ensure_unique_name({_, deps, _, _} = parsed, name) do
+  def add(%{results: results, deps: deps} = state, name, version) do
     if Enum.any?(deps, &(String.starts_with?(&1, ":" <> name <> ","))) do
-      {:error, :name_conflict}
+      %{state | results: [{:name_conflict, name} | state.results]}
     else
-      parsed
+      deps = [":#{name}, \"~> #{version}\"" | deps]
+      |> Enum.sort
+
+      %{state | deps: deps, results: [{:ok, name, version} | results]}
     end
   end
 
-  def write({:error, _} = result), do: result
-  def write({content, filename}) do
-    File.write!(filename, content)
+  def write(%{results: results, before: before_stuff, deps: deps,
+              after: after_stuff, filename: filename}) do
+    if success?(results) do
+      deps = deps
+      |> Enum.map(&("{#{&1}}"))
+      |> Enum.join(",\n      ")
+
+      content = [before_stuff, "    [\n      #{deps}\n    ]", after_stuff]
+      |> Enum.join("\n")
+
+      File.write!(filename, content)
+      :ok
+    else
+      {:error, results}
+    end
+  end
+
+  def success?(results) do
+    Enum.all?(results, fn
+      {:ok, _, _} -> true
+      _ -> false
+    end)
   end
 
   defp parse(lines, filename) do
@@ -49,12 +52,14 @@ defmodule MixExsEditor do
          dei when is_number(dei) <- deps_end_index(lines, dsi),
          deps_lines <-
            Enum.slice(lines, (dsi + 1)..(dei - 1)),
-         deps when is_list(deps) <-
-           parse_deps(deps_lines),
-      do: {Enum.slice(lines, 0..dsi) |> Enum.join("\n"),
-           deps,
-           Enum.slice(lines, dei..-1) |> Enum.join("\n"),
-           filename}
+         deps when is_list(deps) <- parse_deps(deps_lines)
+      do %MixExsEditor{before: Enum.slice(lines, 0..dsi) |> Enum.join("\n"),
+                       deps: deps,
+                       after: Enum.slice(lines, dei..-1) |> Enum.join("\n"),
+                       filename: filename}
+      else
+        {:error, error} -> %MixExsEditor{results: [error], filename: filename}
+      end
   end
 
   defp deps_start_index(lines) do
@@ -73,7 +78,7 @@ defmodule MixExsEditor do
          end_index when not is_nil(end_index) <-
            Enum.find_index(lines, &(Regex.match?(@deps_end_regex, &1))),
       do: start_index + end_index)
-    || {:error, :no_deps_end}
+    || {:errors, :no_deps_end}
   end
 
   defp parse_deps(lines, acc \\ [])

@@ -4,15 +4,16 @@ Adds a mix task for auto-adding dependencies to `mix.exs`, *if* you happen to
 keep your `mix.exs` file's `deps` function in a simple canonical form.
 
 ```
-$ mix deps.add httpoison
-httpoison 0.11.1 added.
+$ mix deps.add httpoison hackney
+:httpoison, "~> 0.11.2"
+:hackney, "~> 1.5.5"
 ```
 
 ## Installation
 Install its archive, so that it's available in all of your projects:
 
 ```
-$ mix archive.install https://github.com/bryanstearns/mix_deps_add/releases/download/0.1.1/mix_deps_add-0.1.1.ez
+$ mix archive.install https://github.com/bryanstearns/mix_deps_add/releases/download/0.1.2/mix_deps_add-0.1.2.ez
 ```
 
 ## Why?
