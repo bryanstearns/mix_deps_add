@@ -1,4 +1,6 @@
-defmodule MixExsEditor do
+defmodule MixDepsAdd.MixExsEditor do
+  alias MixDepsAdd.MixExsEditor
+
   @deps_start_regex ~r/\A\s*defp deps do\z/
   @deps_end_regex ~r/\A\s*end\z/
   @dep_regex ~r/\A\s+\[?\{(.*)\}[\],]?\z/

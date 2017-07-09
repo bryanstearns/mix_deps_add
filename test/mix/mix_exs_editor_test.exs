@@ -1,5 +1,6 @@
 defmodule MixExsEditorTest do
   use ExUnit.Case
+  alias MixDepsAdd.MixExsEditor
 
   test "reads a file" do
     %{before: stuff_before, deps: deps, after: stuff_after, filename: filename, results: []} =

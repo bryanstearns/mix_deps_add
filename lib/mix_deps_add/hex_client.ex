@@ -1,4 +1,4 @@
-defmodule HexClient do
+defmodule MixDepsAdd.HexClient do
   def package_info(package_name) do
     :inets.start()
     :ssl.start()

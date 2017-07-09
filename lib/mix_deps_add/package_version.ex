@@ -1,4 +1,6 @@
-defmodule PackageVersion do
+defmodule MixDepsAdd.PackageVersion do
+  alias MixDepsAdd.HexClient
+
   def current(name, hex_client \\ HexClient) do
     with {:ok, info} <- hex_client.package_info(name),
          latest <- latest_release(info),

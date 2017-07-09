@@ -1,5 +1,8 @@
 defmodule Mix.Tasks.Deps.Add do
   use Mix.Task
+  alias MixDepsAdd.MixExsEditor
+  alias MixDepsAdd.PackageVersion
+
   @shortdoc "Adds new dependencies to mix.exs"
 
   @mix_exs_parsing_errors %{
