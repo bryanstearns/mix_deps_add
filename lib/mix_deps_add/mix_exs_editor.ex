@@ -68,6 +68,7 @@ defmodule MixDepsAdd.MixExsEditor do
     lines
     |> Enum.with_index
     |> Enum.filter(&(Regex.match?(@deps_start_regex, elem(&1, 0))))
+    |> debug_inspect(label: "deps_start_regex lines")
     |> Enum.map(fn {_, i} -> i end)
     |> exactly_one(:no_deps, :ambiguous_deps)
   end
@@ -95,5 +96,13 @@ defmodule MixDepsAdd.MixExsEditor do
 
   defp parse_dep(line) do
     String.replace(line, @dep_regex, "\\1")
+  end
+
+  defp debug_inspect(value, opts \\ []) do
+    if Mix.debug? do
+      IO.inspect(value, opts)
+    else
+      value
+    end
   end
 end
