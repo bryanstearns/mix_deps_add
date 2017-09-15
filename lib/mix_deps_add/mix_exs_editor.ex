@@ -5,6 +5,7 @@ defmodule MixDepsAdd.MixExsEditor do
   @deps_end_regex ~r/\A\s*end\z/
   @dep_regex ~r/\A\s+\[?\{(.*)\}[\],]?\z/
   @square_brackets_regex ~r/\A\s+[\[\]]{1,2}\z/
+  @mix_new_comments_regex ~r/\A\s+# {:dep_from_.*\z/
 
   defstruct results: [], before: "", deps: [], after: "", filename: "mix.exs"
 
@@ -94,6 +95,7 @@ defmodule MixDepsAdd.MixExsEditor do
   defp parse_deps([], acc), do: acc
   defp parse_deps([line | rest], acc) do
     cond do
+      Regex.match?(@mix_new_comments_regex, line) -> parse_deps(rest, acc)
       Regex.match?(@dep_regex, line) -> parse_deps(rest, [parse_dep(line) | acc])
       Regex.match?(@square_brackets_regex, line) -> parse_deps(rest, acc)
       true -> {:error, :unparsable_deps}

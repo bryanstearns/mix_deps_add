@@ -20,6 +20,7 @@ defmodule MixExsEditorTest do
     assert %{results: [:ambiguous_deps]} = MixExsEditor.read("test/fixtures/ambiguous_deps.exs")
     assert %{results: [:unparsable_deps]} = MixExsEditor.read("test/fixtures/unparsable_deps.exs")
     assert %{results: [], deps: []} = MixExsEditor.read("test/fixtures/empty.exs")
+    assert %{results: [], deps: []} = MixExsEditor.read("test/fixtures/mix_new.exs")
   end
 
   test "inserts new dependencies in sorted order" do
