@@ -31,7 +31,8 @@ defmodule Mix.Tasks.Deps.Add do
 
   def add_package(state, package_name, editor, versioner) do
     case versioner.current(package_name) do
-      {:ok, version} -> editor.add(state, package_name, version)
+      {:versioned, version} -> editor.add(state, package_name, version: version)
+      {:relative, name, path} -> editor.add(state, name, path: path)
       error -> error
     end
   end
@@ -50,8 +51,11 @@ defmodule Mix.Tasks.Deps.Add do
     state
   end
 
-  defp announce_result({:ok, name, version}) do
+  defp announce_result({:versioned, name, version}) do
     IO.puts(":#{name}, \"~> #{version}\"")
+  end
+  defp announce_result({:relative, name, path}) do
+    IO.puts(":#{name}, path: \"#{path}\"")
   end
   defp announce_result({:name_conflict, name}) do
     IO.puts("Oops: \"#{name}\" is already a dependency!")

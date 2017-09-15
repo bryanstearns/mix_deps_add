@@ -14,15 +14,20 @@ defmodule MixDepsAdd.MixExsEditor do
     |> parse(filename)
   end
 
-  def add(%{results: results, deps: deps} = state, name, version) do
+  def add(%{results: results, deps: deps} = state, name, version_or_path) do
     if Enum.any?(deps, &(String.starts_with?(&1, ":" <> name <> ","))) do
-      %{state | results: [{:name_conflict, name} | state.results]}
+      %{state | results: [{:name_conflict, name} | results]}
     else
-      deps = [":#{name}, \"~> #{version}\"" | deps]
-      |> Enum.sort
-
-      %{state | deps: deps, results: [{:ok, name, version} | results]}
+      {dep, result} = format_dependency(name, version_or_path)
+      %{state | deps: Enum.sort([dep | deps]), results: [result | results]}
     end
+  end
+
+  defp format_dependency(name, version: version) do
+    {":#{name}, \"~> #{version}\"", {:versioned, name, version}}
+  end
+  defp format_dependency(name, path: path) do
+    {":#{name}, path: \"#{path}\"", {:relative, name, path}}
   end
 
   def write(%{results: results, before: before_stuff, deps: deps,
@@ -44,7 +49,8 @@ defmodule MixDepsAdd.MixExsEditor do
 
   def success?(results) do
     Enum.all?(results, fn
-      {:ok, _, _} -> true
+      {:versioned, _, _} -> true
+      {:relative, _, _} -> true
       _ -> false
     end)
   end
@@ -98,7 +104,7 @@ defmodule MixDepsAdd.MixExsEditor do
     String.replace(line, @dep_regex, "\\1")
   end
 
-  defp debug_inspect(value, opts \\ []) do
+  defp debug_inspect(value, opts) do
     if Mix.debug? do
       IO.inspect(value, opts)
     else

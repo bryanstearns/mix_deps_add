@@ -22,15 +22,19 @@ defmodule MixExsEditorTest do
     assert %{results: [], deps: []} = MixExsEditor.read("test/fixtures/empty.exs")
   end
 
-  test "inserts a new dependency in sorted order" do
+  test "inserts new dependencies in sorted order" do
     before_state = %MixExsEditor{
       before: "  defp deps do",
       deps: [":foo, ...", ":bar, ..."],
       after: "  end"
     }
 
-    assert %{results: [{:ok, "baz", "1.0.0"}], deps: [":bar, ...", ":baz, \"~> 1.0.0\"", ":foo, ..."]} =
-      MixExsEditor.add(before_state, "baz", "1.0.0")
+    with_baz = MixExsEditor.add(before_state, "baz", version: "1.0.0")
+    assert %{results: [{:versioned, "baz", "1.0.0"}], deps: [":bar, ...", ":baz, \"~> 1.0.0\"", ":foo, ..."]} = with_baz
+
+    with_baz_and_quux = MixExsEditor.add(with_baz, "quux", path: "../quux")
+    assert %{results: [{:relative, "quux", "../quux"}, {:versioned, "baz", "1.0.0"}],
+             deps: [":bar, ...", ":baz, \"~> 1.0.0\"", ":foo, ...", ":quux, path: \"../quux\""]} = with_baz_and_quux
   end
 
   test "rejects duplicates" do
@@ -42,22 +46,22 @@ defmodule MixExsEditorTest do
     }
 
     assert %{results: [{:name_conflict, "foo"}]} =
-      MixExsEditor.add(before_state, "foo", "0.0.0")
+      MixExsEditor.add(before_state, "foo", versioned: "0.0.0")
   end
 
   describe "end-to-end" do
     setup do
-      original = File.read!("test/fixtures/end-to-end.exs")
+      original = "test/fixtures/mix.exs"
       copy = "test/fixtures/end-to-end-copy.exs"
       on_exit(fn -> File.rm(copy) end)
-      File.write!(copy, original)
+      File.cp(original, copy)
 
       {:ok, fixture_path: copy}
     end
 
     test "succeeds correctly", context do
       :ok = MixExsEditor.read(context[:fixture_path])
-      |> MixExsEditor.add("idna", "4.0.0")
+      |> MixExsEditor.add("idna", version: "4.0.0")
       |> MixExsEditor.write()
 
       assert File.read!(context[:fixture_path]) ==
@@ -66,9 +70,9 @@ defmodule MixExsEditorTest do
 
     test "fails correctly", context do
       assert {:error, [{:name_conflict, "poison"},
-                       {:ok, "foo", "1.0.0"}]} = MixExsEditor.read(context[:fixture_path])
-        |> MixExsEditor.add("foo", "1.0.0")
-        |> MixExsEditor.add("poison", "6.6.6")
+                       {:versioned, "foo", "1.0.0"}]} = MixExsEditor.read(context[:fixture_path])
+        |> MixExsEditor.add("foo", version: "1.0.0")
+        |> MixExsEditor.add("poison", version: "6.6.6")
         |> MixExsEditor.write()
     end
   end
