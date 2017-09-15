@@ -3,7 +3,7 @@ defmodule MixDepsAdd.Mixfile do
 
   def project do
     [app: :mix_deps_add,
-     version: "0.1.3-pre",
+     version: "0.1.3",
      elixir: "~> 1.4",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod]
